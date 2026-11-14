@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event Registration Management System</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════════════
+       NAVIGATION BAR
+  ═══════════════════════════════════════════════ -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <span class="nav-icon">📋</span>
+        <span>Event Registration System</span>
+      </div>
+      <div class="nav-links">
+        <a href="#registrations-section" class="nav-link">Registrations</a>
+        <a href="#form-section" class="nav-link" id="nav-add-btn">+ Add Registration</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+
+    <!-- ═══════════════════════════════════════════════
+         TOAST NOTIFICATIONS
+    ═══════════════════════════════════════════════ -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- ═══════════════════════════════════════════════
+         REGISTRATION FORM SECTION
+    ═══════════════════════════════════════════════ -->
+    <section id="form-section" class="card">
+      <div class="card-header">
+        <h2 id="form-title">Add New Registration</h2>
+        <button id="cancel-btn" class="btn btn-secondary hidden">Cancel</button>
+      </div>
+
+      <form id="registration-form" novalidate>
+        <input type="hidden" id="edit-id" />
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="participantName">Participant Name <span class="required">*</span></label>
+            <input type="text" id="participantName" name="participantName" placeholder="e.g. Aarav Sharma"
+              maxlength="100" />
+            <span class="field-error" id="err-participantName"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email Address <span class="required">*</span></label>
+            <input type="email" id="email" name="email" placeholder="e.g. aarav@example.com" />
+            <span class="field-error" id="err-email"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone Number <span class="required">*</span></label>
+            <input type="tel" id="phone" name="phone" placeholder="e.g. 9876543210" />
+            <span class="field-error" id="err-phone"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="eventName">Event Name <span class="required">*</span></label>
+            <input type="text" id="eventName" name="eventName" placeholder="e.g. TechFest 2026" maxlength="150" />
+            <span class="field-error" id="err-eventName"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="eventCategory">Event Category <span class="required">*</span></label>
+            <select id="eventCategory" name="eventCategory">
+              <option value="">-- Select Category --</option>
+              <option value="Technical">Technical</option>
+              <option value="Cultural">Cultural</option>
+              <option value="Sports">Sports</option>
+              <option value="Academic">Academic</option>
+              <option value="Workshop">Workshop</option>
+              <option value="Seminar">Seminar</option>
+              <option value="Other">Other</option>
+            </select>
+            <span class="field-error" id="err-eventCategory"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="registrationDate">Registration Date <span class="required">*</span></label>
+            <input type="date" id="registrationDate" name="registrationDate" />
+            <span class="field-error" id="err-registrationDate"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="fee">Fee (₹) <span class="required">*</span></label>
+            <input type="number" id="fee" name="fee" placeholder="e.g. 500" min="0"
+              step="0.01" />
+            <span class="field-error" id="err-fee"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="paymentStatus">Payment Status <span class="required">*</span></label>
+            <select id="paymentStatus" name="paymentStatus">
+              <option value="">-- Select Status --</option>
+              <option value="Paid">Paid</option>
+              <option value="Pending">Pending</option>
+              <option value="Failed">Failed</option>
+            </select>
+            <span class="field-error" id="err-paymentStatus"></span>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="submit-btn">Add Registration</button>
+          <button type="button" class="btn btn-secondary" id="fill-sample-btn">Fill Sample</button>
+          <button type="button" class="btn btn-outline" id="clear-btn">Clear Form</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         FILTERS & SEARCH SECTION
+    ═══════════════════════════════════════════════ -->
+    <section id="registrations-section" class="card">
+      <div class="card-header">
+        <h2>Registrations</h2>
+        <span id="result-count" class="badge">0 records</span>
+      </div>
+
+      <!-- Search Row -->
+      <div class="filter-panel">
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Search by Name</label>
+            <input type="text" id="search-name" placeholder="Participant name..." />
+          </div>
+          <div class="filter-group">
+            <label>Search by ID</label>
+            <input type="text" id="search-id" placeholder="e.g. EM101..." />
+          </div>
+          <div class="filter-group">
+            <label>Search Name <em>OR</em> Event</label>
+            <input type="text" id="search-or" placeholder="Name or event name ($or)..." />
+          </div>
+        </div>
+
+        <!-- Primary Filters -->
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Event Name</label>
+            <input type="text" id="filter-event-name" placeholder="Filter by event name..." />
+          </div>
+
+          <div class="filter-group">
+            <label>Event Category</label>
+            <select id="filter-category">
+              <option value="">All Categories</option>
+              <option value="Technical">Technical</option>
+              <option value="Cultural">Cultural</option>
+              <option value="Sports">Sports</option>
+              <option value="Academic">Academic</option>
+              <option value="Workshop">Workshop</option>
+              <option value="Seminar">Seminar</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Payment Status</label>
+            <select id="filter-status">
+              <option value="">All Statuses</option>
+              <option value="Paid">Paid</option>
+              <option value="Pending">Pending</option>
+              <option value="Failed">Failed</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Status is NOT ($ne)</label>
+            <select id="filter-status-ne">
+              <option value="">-- None --</option>
+              <option value="Paid">Not Paid</option>
+              <option value="Pending">Not Pending</option>
+              <option value="Failed">Not Failed</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Date Range Filters -->
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Date From (≥ $gte)</label>
+            <input type="date" id="filter-date-from" />
+          </div>
+          <div class="filter-group">
+            <label>Date To (≤ $lte)</label>
+            <input type="date" id="filter-date-to" />
+          </div>
+        </div>
+
+        <!-- Fee Comparison Filters -->
+        <fieldset class="filter-fieldset">
+          <legend>Fee Comparison Operators (MongoDB)</legend>
+          <div class="filter-row">
+            <div class="filter-group">
+              <label>Fee &gt; ($gt)</label>
+              <input type="number" id="filter-fee-gt" placeholder="e.g. 300" min="0" />
+            </div>
+            <div class="filter-group">
+              <label>Fee &lt; ($lt)</label>
+              <input type="number" id="filter-fee-lt" placeholder="e.g. 1000" min="0" />
+            </div>
+            <div class="filter-group">
+              <label>Fee ≥ ($gte)</label>
+              <input type="number" id="filter-fee-gte" placeholder="e.g. 200" min="0" />
+            </div>
+            <div class="filter-group">
+              <label>Fee ≤ ($lte)</label>
+              <input type="number" id="filter-fee-lte" placeholder="e.g. 800" min="0" />
+            </div>
+            <div class="filter-group">
+              <label>Fee ≠ ($ne)</label>
+              <input type="number" id="filter-fee-ne" placeholder="e.g. 500" min="0" />
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- $in Filter for Categories (multi-select) -->
+        <fieldset class="filter-fieldset">
+          <legend>Categories — $in (select multiple)</legend>
+          <div class="checkbox-group">
+            <label><input type="checkbox" class="cat-checkbox" value="Technical" /> Technical</label>
+            <label><input type="checkbox" class="cat-checkbox" value="Cultural" /> Cultural</label>
+            <label><input type="checkbox" class="cat-checkbox" value="Sports" /> Sports</label>
+            <label><input type="checkbox" class="cat-checkbox" value="Academic" /> Academic</label>
+            <label><input type="checkbox" class="cat-checkbox" value="Workshop" /> Workshop</label>
+            <label><input type="checkbox" class="cat-checkbox" value="Seminar" /> Seminar</label>
+            <label><input type="checkbox" class="cat-checkbox" value="Other" /> Other</label>
+          </div>
+          <small class="hint">Select 2+ categories to trigger <code>$in</code> in MongoDB</small>
+        </fieldset>
+
+        <!-- Sorting Controls -->
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Sort By</label>
+            <select id="sort-by">
+              <option value="registrationId">Registration ID</option>
+              <option value="createdAt">Created Date</option>
+              <option value="registrationDate">Registration Date</option>
+              <option value="participantName">Participant Name</option>
+              <option value="fee">Fee</option>
+              <option value="eventName">Event Name</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Sort Order</label>
+            <select id="sort-order">
+              <option value="desc">Descending ↓</option>
+              <option value="asc">Ascending ↑</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Filter Action Buttons -->
+        <div class="filter-actions">
+          <button id="apply-filters-btn" class="btn btn-primary">Apply Filters</button>
+          <button id="reset-filters-btn" class="btn btn-outline">Reset All</button>
+        </div>
+      </div>
+
+      <!-- Active Filters Display -->
+      <div id="active-filters" class="active-filters hidden"></div>
+
+      <!-- Query Info (shows the MongoDB query sent) -->
+      <details id="query-info-details" class="query-info hidden">
+        <summary>MongoDB Query (sent to backend)</summary>
+        <pre id="query-info-pre"></pre>
+      </details>
+
+      <!-- Registrations Table -->
+      <div class="table-wrapper">
+        <table id="registrations-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Event</th>
+              <th>Category</th>
+              <th>Date</th>
+              <th>Fee (₹)</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <!-- Rows inserted dynamically -->
+          </tbody>
+        </table>
+
+        <!-- No results message -->
+        <div id="no-results" class="no-results hidden">
+          <p>🔍 No registrations found matching your criteria.</p>
+          <p>Try adjusting your filters or search terms.</p>
+        </div>
+
+        <!-- Loading indicator -->
+        <div id="loading" class="loading hidden">Loading…</div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         VIEW DETAIL MODAL
+    ═══════════════════════════════════════════════ -->
+    <div id="detail-modal" class="modal-overlay hidden">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Registration Details</h3>
+          <button id="close-modal-btn" class="modal-close">✕</button>
+        </div>
+        <div id="modal-content" class="modal-body">
+          <!-- Detail rows rendered by JS -->
+        </div>
+        <div class="modal-footer">
+          <button id="modal-edit-btn" class="btn btn-primary">Edit</button>
+          <button id="close-modal-btn2" class="btn btn-outline">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         DELETE CONFIRMATION MODAL
+    ═══════════════════════════════════════════════ -->
+    <div id="confirm-modal" class="modal-overlay hidden">
+      <div class="modal modal-sm">
+        <div class="modal-header">
+          <h3>Confirm Deletion</h3>
+        </div>
+        <div class="modal-body">
+          <p id="confirm-message">Are you sure you want to delete this registration?</p>
+          <p class="warn-text">⚠ This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+          <button id="confirm-delete-btn" class="btn btn-danger">Delete</button>
+          <button id="cancel-delete-btn" class="btn btn-outline">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="footer">
+    <p>Event Registration Management System &mdash; Database Systems Assignment</p>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+
+</html>
